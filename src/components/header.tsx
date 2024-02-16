@@ -13,6 +13,27 @@ import { auth } from "@/auth";
 async function Header() {
   const session = await auth();
 
+  let authContent: React.ReactNode;
+  if (session?.user) {
+    authContent = <Avatar src={session.user.image || ""}>User Image</Avatar>;
+  } else {
+    authContent = (
+      <>
+        <NavbarItem>
+          <Button type="submit" color="secondary" variant="bordered">
+            Sign In
+          </Button>
+        </NavbarItem>
+
+        <NavbarItem>
+          <Button type="submit" color="primary" variant="flat">
+            Sign Up
+          </Button>
+        </NavbarItem>
+      </>
+    );
+  }
+
   return (
     <Navbar>
       <NavbarBrand>
@@ -27,11 +48,7 @@ async function Header() {
         </NavbarItem>
       </NavbarContent>
 
-      <NavbarContent justify="end">
-        <NavbarItem>
-          {session?.user ? <div>Signed In</div> : <div>Signed Out</div>}
-        </NavbarItem>
-      </NavbarContent>
+      <NavbarContent justify="end">{authContent}</NavbarContent>
     </Navbar>
   );
 }
