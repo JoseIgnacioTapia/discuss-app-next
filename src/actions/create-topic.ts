@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { auth } from "@/auth";
 
 const createTopicSchema = z.object({
   name: z
@@ -14,15 +15,16 @@ const createTopicSchema = z.object({
 
 interface CreateTopicFormState {
   errors: {
-    name?: string[];
-    description?: string[];
+    name?: string[] | undefined;
+    description?: string[] | undefined;
+    _form?: string[] | undefined;
   };
 }
 
 export async function createTopic(
   formState: CreateTopicFormState,
   formData: FormData
-) {
+): Promise<CreateTopicFormState> {
   const result = createTopicSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
@@ -31,6 +33,15 @@ export async function createTopic(
   if (!result.success) {
     return {
       errors: result.error.flatten().fieldErrors,
+    };
+  }
+
+  const session = await auth();
+  if (!session || !session.user) {
+    return {
+      errors: {
+        _form: ["You must be signed in to do this."],
+      },
     };
   }
 
