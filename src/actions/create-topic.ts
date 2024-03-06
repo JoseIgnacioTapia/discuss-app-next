@@ -1,7 +1,12 @@
 "use server";
 
+import type { Topic } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { prisma } from "@/db";
+import paths from "@/paths";
 
 const createTopicSchema = z.object({
   name: z
@@ -45,9 +50,33 @@ export async function createTopic(
     };
   }
 
-  return {
-    errors: {},
-  };
+  let topic: Topic;
+  try {
+    // throw new Error("Failed to create topic");    => For test proposal only
+    topic = await prisma.topic.create({
+      data: {
+        slug: result.data.name,
+        description: result.data.description,
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return {
+        errors: {
+          _form: [err.message],
+        },
+      };
+    } else {
+      return {
+        errors: {
+          _form: ["Somuething went wrong"],
+        },
+      };
+    }
+  }
 
-  // TODO: revalidate the homepage after creating a new topic
+  // Revalidate the homepage after creating a new topic
+  revalidatePath("/");
+
+  redirect(paths.topicShow(topic.slug));
 }
