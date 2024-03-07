@@ -12,7 +12,7 @@ import HeaderAuth from "./header-auth";
 
 function Header() {
   return (
-    <Navbar>
+    <Navbar className="shadow mb-6">
       <NavbarBrand>
         <Link href="/" className="font-bold">
           Discuss
