@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/db";
 import paths from "@/paths";
+import { auth } from "@/auth";
 
 const createPostSchema = z.object({
   title: z.string().min(3),
@@ -32,6 +33,15 @@ export async function createPost(
   if (!result.success) {
     return {
       errors: result.error.flatten().fieldErrors,
+    };
+  }
+
+  const session = await auth();
+  if (!session || !session.user) {
+    return {
+      errors: {
+        _form: ["You must be signed in to do this."],
+      },
     };
   }
 
