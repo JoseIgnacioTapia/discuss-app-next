@@ -58,8 +58,33 @@ export async function createPost(
     };
   }
 
-  return {
-    errors: {},
-  };
+  let post: Post;
+  try {
+    post = await prisma.post.create({
+      data: {
+        title: result.data.title,
+        content: result.data.content,
+        topicId: topic.id,
+        userId: session.user.id,
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return {
+        errors: {
+          _form: [err.message],
+        },
+      };
+    } else {
+      return {
+        errors: {
+          _form: ["Unknown error. Failed to create post"],
+        },
+      };
+    }
+  }
+
   // TODO: revalidate the topic show page after creating a new post
+  revalidatePath(paths.topicShow(slug));
+  redirect(paths.postShow(slug, post.id));
 }
