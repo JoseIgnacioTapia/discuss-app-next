@@ -22,6 +22,7 @@ interface CreatePostFormState {
 }
 
 export async function createPost(
+  slug: string,
   formState: CreatePostFormState,
   formData: FormData
 ): Promise<CreatePostFormState> {
@@ -41,6 +42,18 @@ export async function createPost(
     return {
       errors: {
         _form: ["You must be signed in to do this."],
+      },
+    };
+  }
+
+  const topic = await prisma.topic.findFirst({
+    where: { slug },
+  });
+
+  if (!topic) {
+    return {
+      errors: {
+        _form: ["Cannot find topic"],
       },
     };
   }
